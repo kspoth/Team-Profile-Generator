@@ -1,3 +1,6 @@
+const Manager = require("./lib/Manager");
+const Engineer = require("./lib/Engineer");
+const Intern = require("./lib/Intern");
 const inquirer = require("inquirer");
 const path = require("path");
 const fs = require("fs");
@@ -5,151 +8,132 @@ const fs = require("fs");
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
-const Manager = require("./lib/Manager");
-const Engineer = require("./lib/Engineer");
-const Intern = require("./lib/Intern");
-
 const render = require("./lib/htmlRenderer");
-const employee = [];
-const managerQuestions = [
-  {
-    type: "input",
-    name: "managerName",
-    message: "Manager Name:"
-  },
+const { ENGINE_METHOD_RAND, EADDRINUSE } = require("constants");
 
-  {
-    type: "input",
-    name: "managerId",
-    message: "Manager ID:"
-  },
+const employees = [];
 
-  {
-    type: "input",
-    name: "managerEmail",
-    message: "Manager email:"
-  },
+//function that establishes use of the command line to run through prompts
+function commandLine(){
+    //inquirer for manager
+    function manager(){
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "mName",
+                message: "What is the name of your team's manager?"
+            },
+            {
+                type: "input",
+                name: "mId",
+                message: "What is the team Manager's ID?"
+            },
+            {
+                type: "input",
+                name: "mEmail",
+                message: "What is your team Manager's e-mail?"
+            },
+            {
+                type: "input",
+                name: "mOffice",
+                message: "What is your team Manager's office number?"
+            }
+        ]).then(input => {
+            const manager = new Manager(input.mName, input.mId, input.mEmail, input.mOffice);
+            employees.push(manager);
+            addEmployee();
+        });
+    }
+    //inquirer for engineers
+    function engineerAdd(){
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "eName",
+                message: "What is the name of the Engineer?"
+            },
+            {
+                type: "input",
+                name: "eId",
+                message: "What is the Engineer's ID?"
+            },
+            {
+                type: "input",
+                name: "eEmail",
+                message: "What is the Engineer's e-mail?"
+            },
+            {
+                type: "input",
+                name: "eGit",
+                message: "What is the Engineer's Github?"
+            }
+        ]).then(response => {
+            const engineer = new Engineer(response.eName, response.eId, response.eEmail, response.eGit);
+            employees.push(engineer);
+            addEmployee();
+        });
+    }
+    //function to add interns
+    function internAdd(){
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "iName",
+                message: "What is the Intern's name?"
+            },
+            {
+                type: "input",
+                name: "iId",
+                message: "What is the Intern's ID?"
+            },
+            {
+                type: "input",
+                name: "iEmail",
+                message: "What is the Intern's e-mail?"
+            },
+            {
+                type: "input",
+                name: "iSchool",
+                message: "What is the Intern's School?"
+            }
+        ]).then(response => {
+            const intern = new Intern(response.iName, response.iId, response.iEmail, response.iSchool);
+            employees.push(intern);
+            addEmployee();
+        });
+    }
+    function createHTML(){
+        fs.writeFileSync(outputPath, render(employees), "utf-8");
+    };
+    //function to run after manager inquiry, check for additional employees or end inquirer to create html
+    function addEmployee(){
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "employeeType",
+                message: "Add an additional team member?",
+                choices: [
+                    "Engineer",
+                    "Intern",
+                    "No additional team members"
+                ]
+            }
+        ]).then(response => {
+            switch(response.employeeType){
+                case "Engineer":
+                    engineerAdd();
+                    break;
+                case "Intern":
+                    internAdd();
+                    break;
+                default:
+                    createHTML();
+                    console.log("Creating Team Page....")
+            }
+        });
+    }
 
-  {
-    type: "input",
-    name: "officeNumber",
-    message: "Manager office number:"
-  }
-];
-
-const addTeamMembers = [
-  {
-    type: "list",
-    name: "addTeamMembers",
-    choices: ["Engineer", "Intern", "Done"]
-  }
-];
-
-const engineerQuestions = [
-  {
-    type: "input",
-    name: "engineerName",
-    message: "Engineer Name:"
-  },
-
-  {
-    type: "input",
-    name: "engineerId",
-    message: "Engineer ID:"
-  },
-
-  {
-    type: "input",
-    name: "engineerEmail",
-    message: "Engineer email address:"
-  },
-
-  {
-    type: "input",
-    name: "engineerGitHub",
-    message: "Engineer GitHub username:"
-  },
-];
-
-const internQuestions = [
-  {
-    type: "input",
-    name: "internName",
-    message: "Intern's name:"
-  },
-
-  {
-    type: "input",
-    name: "internId",
-    message: "Intern's ID:"
-  },
-
-  {
-    type: "input",
-    name: "internEmail",
-    message: "Intern's email:"
-  },
-
-  {
-    type: "input",
-    name: "internSchool",
-    message: "Intern's school:"
-  },
-];
-
-function promptTeam() {
-    inquirer.prompt(addTeamMembers).then(function (member) {
-      console.log(member.addTeamMembers);
-      if (member.addTeamMembers === "Engineer") {
-        createEngineer();
-      } else if (member.addTeamMembers === "Intern") {
-        createIntern();
-      } else {
-        buildTeam();
-      }
-    });
-  }
-
-function createEngineer() {
-  inquirer.prompt(engineerQuestions).then(function (engineerResponse) {
-    const newEngineer = new Engineer(
-      engineerResponse.engineerName,
-      engineerResponse.engineerId,
-      engineerResponse.engineerEmail,
-      engineerResponse.engineerGitHub,
-    );
-    promptTeam();
-    employee.push(newEngineer);
-  });
+    manager();
 }
-
-function createIntern() {
-  inquirer.prompt(internQuestions).then((internResponse) => {
-    const newIntern = new Intern(
-      internResponse.internName,
-      internResponse.internId,
-      internResponse.internEmail,
-      internResponse.internSchool,
-    );
-    promptTeam();
-    employee.push(newIntern);
-  });
-}
-
-function createManager() {
-  inquirer.prompt(managerQuestions).then((managerResponse) => {
-    const newManager = new Manager(
-      managerResponse.managerName,
-      managerResponse.managerId,
-      managerResponse.managerEmail,
-      managerResponse.officeNumber,
-    );
-    promptTeam();
-    employee.push(newManager);
-  });
-}
-createManager();
-
-function buildTeam() {
-    fs.writeFileSync(outputPath, render(employee));
-  }
+//runs overall function structure on startup
+commandLine();

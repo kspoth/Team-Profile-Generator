@@ -1,0 +1,24 @@
+body {
+    background-image: linear-gradient(to right, slategray, darkblue, black);
+    font-family: 'Turret Road', cursive;
+}
+
+.team-heading {
+    background-image: linear-gradient(to left, slategray, darkblue, black);
+    border: solid 5px black;
+    color: white;
+    text-shadow: black 5px 5px 5px;
+}
+
+.employee-card {
+    margin: 20px;
+    box-shadow: black 5px 5px 5px;
+}
+
+@media only screen and (max-width: 800px){
+    .employee-card {
+       width: 100%;
+       margin: 0;
+       margin-bottom: 20px;
+   }
+}
