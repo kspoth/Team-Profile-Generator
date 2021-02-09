@@ -8,12 +8,12 @@ const fs = require("fs");
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
-const render = require("./lib/htmlRenderer");
+const render = require("./lib/htmlRen");
 const { ENGINE_METHOD_RAND, EADDRINUSE } = require("constants");
 
 const employees = [];
 
-//function that establishes use of the command line to run through prompts
+//Starts the command prompt
 function commandLine(){
     //inquirer for manager
     function manager(){
@@ -44,7 +44,7 @@ function commandLine(){
             addEmployee();
         });
     }
-    //inquirer for engineers
+    //inquirer for engineer
     function engineerAdd(){
         inquirer.prompt([
             {
@@ -64,16 +64,16 @@ function commandLine(){
             },
             {
                 type: "input",
-                name: "eGit",
+                name: "eGits",
                 message: "What is the Engineer's Github?"
             }
         ]).then(response => {
-            const engineer = new Engineer(response.eName, response.eId, response.eEmail, response.eGit);
+            const engineer = new Engineer(response.eName, response.eId, response.eEmail, response.eGits);
             employees.push(engineer);
             addEmployee();
         });
     }
-    //function to add interns
+    //inquirer to add intern
     function internAdd(){
         inquirer.prompt([
             {
@@ -105,7 +105,7 @@ function commandLine(){
     function createHTML(){
         fs.writeFileSync(outputPath, render(employees), "utf-8");
     };
-    //function to run after manager inquiry, check for additional employees or end inquirer to create html
+    //function to add employees or create html
     function addEmployee(){
         inquirer.prompt([
             {
@@ -135,5 +135,5 @@ function commandLine(){
 
     manager();
 }
-//runs overall function structure on startup
+//Runs the function of command line
 commandLine();
